@@ -31,35 +31,21 @@ def main():
                 st.success(f"Transcription saved to file: {filename}")
 
 def transcribe_speech(api_choice, language_choice):
-    # Initialize recognizer class
-    r = sr.Recognizer()
-    # Reading Microphone as source
-    with sr.Microphone() as source:
-        st.info("Speak now...")
-        recording = True
-        while recording:
-            # record audio
-            audio = sd.rec(int(5 * 44100), samplerate=44100, channels=2)
-            sd.wait()
+    st.info("Speak now...")
+    audio_data = st.audio(record=True)
 
-            # add buttons to pause and resume recording
-            col1, col2 = st.columns(2)
-            if col1.button("Pause Recording"):
-                recording = False
-            if col2.button("Resume Recording"):
-                recording = True
-
-        # listen for speech and store in audio_text variable
-        audio_text = r.listen(source)
+    if audio_data:
         st.info("Transcribing...")
 
         try:
             if api_choice == "Google Speech Recognition":
                 # using Google Speech Recognition
-                text = r.recognize_google(audio_text, language=language_choice)
+                # convert audio_data to the format required by recognize_google
+                pass
             elif api_choice == "Deepgram":
                 # using Deepgram
-                text = recognize_with_deepgram(audio_text, language_choice)
+                # convert audio_data to the format required by Deepgram
+                pass
             return text
         except sr.RequestError as e:
             # API was unreachable or unresponsive

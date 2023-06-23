@@ -5,6 +5,7 @@ from pocketsphinx import LiveSpeech, get_model_path
 import os
 import sounddevice as sd
 import numpy as np
+from pydub import AudioSegment
 
 def main():
     st.title("Speech Recognition App")
@@ -39,8 +40,10 @@ def transcribe_speech(api_choice, language_choice):
 
         try:
             if api_choice == "Google Speech Recognition":
-                # using Google Speech Recognition
                 # convert audio_data to the format required by recognize_google
+                audio_segment = AudioSegment.from_file(audio_data, format="wav")
+                flac_data = audio_segment.export(format="flac")
+                # use flac_data with recognize_google
                 pass
             elif api_choice == "Deepgram":
                 # using Deepgram

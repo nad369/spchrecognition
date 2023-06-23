@@ -2,6 +2,7 @@ google-api-core==2.11.1
 google-auth==2.20.0
 google-cloud-speech==2.20.0
 googleapis-common-protos==1.59.1
+pocketsphinx==5.0.1
 sounddevice==0.4.6
 streamlit==1.23.1
 

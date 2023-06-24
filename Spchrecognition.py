@@ -1,64 +1,66 @@
 import streamlit as st
-import pocketsphinx
 import sys; print(sys.path)
-from pocketsphinx import LiveSpeech, get_model_path
 import os
-import sounddevice as sd
 import numpy as np
 from pydub import AudioSegment
+import speech_recognition as sr
 
 def main():
     st.title("Speech Recognition App")
-    st.write("Click on the microphone to start speaking:")
+    st.write("Upload an audio file to start:")
 
-    # add a selectbox to choose the speech recognition API
-    api_options = ["Google Speech Recognition", "Deepgram"]
-    api_choice = st.selectbox("Choose Speech Recognition API:", api_options)
+    # add a file uploader to the Streamlit app
+    uploaded_file = st.file_uploader("Choose an audio file:")
 
-    # add a selectbox to choose the language
-    language_options = ["en-US", "fr-FR", "es-ES", "de-DE"]
-    language_choice = st.selectbox("Choose Language:", language_options)
+    # check if a file was uploaded
+    if uploaded_file is not None:
+        # get the file data
+        audio_data = uploaded_file.read()
 
-    # add a button to trigger speech recognition
-    if st.button("Start Recording"):
-        text = transcribe_speech(api_choice, language_choice)
-        st.write("Transcription: ", text)
+        # add a selectbox to choose the speech recognition API
+        api_options = ["Google Speech Recognition", "Deepgram"]
+        api_choice = st.selectbox("Choose Speech Recognition API:", api_options)
 
-        # ask the user if they want to save the transcription
-        if st.checkbox("Save transcription to file?"):
-            filename = st.text_input("Enter filename:")
-            if filename:
-                save_transcription_to_file(text, filename)
-                st.success(f"Transcription saved to file: {filename}")
+        # add a selectbox to choose the language
+        language_options = ["en-US", "fr-FR", "es-ES", "de-DE"]
+        language_choice = st.selectbox("Choose Language:", language_options)
 
-def transcribe_speech(api_choice, language_choice):
-    st.info("Speak now...")
-    audio_data = st.audio(record=True)
+        # add a button to trigger speech recognition
+        if st.button("Start Transcription"):
+            text = transcribe_speech(api_choice, language_choice, audio_data)
+            st.write("Transcription: ", text)
 
-    if audio_data:
-        st.info("Transcribing...")
+            # ask the user if they want to save the transcription
+            if st.checkbox("Save transcription to file?"):
+                filename = st.text_input("Enter filename:")
+                if filename:
+                    save_transcription_to_file(text, filename)
+                    st.success(f"Transcription saved to file: {filename}")
 
-        try:
-            if api_choice == "Google Speech Recognition":
-                # convert audio_data to the format required by recognize_google
-                audio_segment = AudioSegment.from_file(audio_data, format="wav")
-                flac_data = audio_segment.export(format="flac")
-                # use flac_data with recognize_google
-                pass
-            elif api_choice == "Deepgram":
-                # using Deepgram
-                # convert audio_data to the format required by Deepgram
-                pass
-            return text
-        except sr.RequestError as e:
-            # API was unreachable or unresponsive
-            return f"Sorry, there was an error reaching the API: {e}"
-        except sr.UnknownValueError:
-            # speech was unintelligible
-            return "Sorry, I could not understand what you said."
-        except Exception as e:
-            # other error occurred
-            return f"Sorry, an error occurred: {e}"
+def transcribe_speech(api_choice, language_choice, audio_data):
+    st.info("Transcribing...")
+
+    try:
+        if api_choice == "Google Speech Recognition":
+            # convert audio_data to the format required by recognize_google
+            audio_segment = AudioSegment.from_file(audio_data, format="wav")
+            flac_data = audio_segment.export(format="flac")
+            # use flac_data with recognize_google
+            pass
+        elif api_choice == "Deepgram":
+            # using Deepgram
+            # convert audio_data to the format required by Deepgram
+            pass
+        return text
+    except sr.RequestError as e:
+        # API was unreachable or unresponsive
+        return f"Sorry, there was an error reaching the API: {e}"
+    except sr.UnknownValueError:
+        # speech was unintelligible
+        return "Sorry, I could not understand what you said."
+    except Exception as e:
+        # other error occurred
+        return f"Sorry, an error occurred: {e}"
 
 def recognize_with_deepgram(audio_text, language_choice):
     # code to use Deepgram API for speech recognition with the specified language

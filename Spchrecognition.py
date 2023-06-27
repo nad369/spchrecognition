@@ -4,6 +4,7 @@ import os
 import numpy as np
 from pydub import AudioSegment
 import speech_recognition as sr
+import io
 
 def main():
     st.title("Speech Recognition App")
@@ -27,8 +28,11 @@ def main():
 
         # add a button to trigger speech recognition
         if st.button("Start Transcription"):
+            text = ""
             text = transcribe_speech(api_choice, language_choice, audio_data)
+            print(f"Transcription: {text}")
             st.write("Transcription: ", text)
+            
 
             # ask the user if they want to save the transcription
             if st.checkbox("Save transcription to file?"):
@@ -39,18 +43,29 @@ def main():
 
 def transcribe_speech(api_choice, language_choice, audio_data):
     st.info("Transcribing...")
+    print(api_choice)
+    print(language_choice)
+    print(audio_data)
 
+    text = ""
     try:
         if api_choice == "Google Speech Recognition":
             # convert audio_data to the format required by recognize_google
-            audio_segment = AudioSegment.from_file(audio_data, format="wav")
+            audio_segment = AudioSegment.from_file(io.BytesIO(audio_data), format="wav")
             flac_data = audio_segment.export(format="flac")
-            # use flac_data with recognize_google
-            pass
+            
+            # create a speech recognition object
+            r = sr.Recognizer()
+            
+            # transcribe the audio data using recognize_google
+            with sr.AudioFile(flac_data) as source:
+                audio = r.record(source)
+                text = r.recognize_google(audio, language=language_choice)
         elif api_choice == "Deepgram":
             # using Deepgram
             # convert audio_data to the format required by Deepgram
             pass
+        
         return text
     except sr.RequestError as e:
         # API was unreachable or unresponsive

@@ -5,6 +5,7 @@ import numpy as np
 from pydub import AudioSegment
 import speech_recognition as sr
 import io
+import subprocess
 
 def main():
     st.title("Speech Recognition App")
@@ -17,6 +18,15 @@ def main():
     if uploaded_file is not None:
         # get the file data
         audio_data = uploaded_file.read()
+
+        # convert the audio data to AIFF
+        input_file = "input.mp3"
+        output_file = "output.aiff"
+        with open(input_file, "wb") as f:
+            f.write(audio_data)
+        convert_audio(input_file, output_file)
+        with open(output_file, "rb") as f:
+            audio_data = f.read()
 
         # add a selectbox to choose the speech recognition API
         api_options = ["Google Speech Recognition", "Deepgram"]
@@ -32,7 +42,6 @@ def main():
             text = transcribe_speech(api_choice, language_choice, audio_data)
             print(f"Transcription: {text}")
             st.write("Transcription: ", text)
-            
 
             # ask the user if they want to save the transcription
             if st.checkbox("Save transcription to file?"):
@@ -51,12 +60,12 @@ def transcribe_speech(api_choice, language_choice, audio_data):
     try:
         if api_choice == "Google Speech Recognition":
             # convert audio_data to the format required by recognize_google
-            audio_segment = AudioSegment.from_file(io.BytesIO(audio_data), format="wav")
+            audio_segment = AudioSegment.from_file(io.BytesIO(audio_data), format="mp3")
             flac_data = audio_segment.export(format="flac")
-            
+
             # create a speech recognition object
             r = sr.Recognizer()
-            
+
             # transcribe the audio data using recognize_google
             with sr.AudioFile(flac_data) as source:
                 audio = r.record(source)
@@ -65,7 +74,7 @@ def transcribe_speech(api_choice, language_choice, audio_data):
             # using Deepgram
             # convert audio_data to the format required by Deepgram
             pass
-        
+
         return text
     except sr.RequestError as e:
         # API was unreachable or unresponsive
@@ -87,6 +96,13 @@ def save_transcription_to_file(text, filename):
     # write the transcription to the file
     with open(filename, "w") as f:
         f.write(text)
+
+def convert_audio(input_file, output_file):
+    # construire la commande ffmpeg
+    cmd = ["ffmpeg", "-y", "-i", input_file, "-f", "aiff", "-acodec", "pcm_s16be", output_file]
+
+    # exécuter la commande
+    subprocess.run(cmd)
 
 if __name__ == "__main__":
     main()
